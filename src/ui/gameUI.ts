@@ -212,21 +212,36 @@ export class GameUI {
 
   // 更新玩家信息
   private updatePlayerInfo(gameData: any): void {
-    gameData.players.forEach((player: any, index: number) => {
-      const playerEl = document.getElementById(`player-${index}`);
-      if (playerEl && index !== 0) { // 不显示人类玩家（player_0），显示AI玩家
-        const nameEl = playerEl.querySelector('.player-name');
-        const cardCountEl = playerEl.querySelector('.card-count');
-        const roleEl = playerEl.querySelector('.player-role');
-        
-        if (nameEl) {
-          const aiLabel = player.type === PlayerType.AI ? ' (AI)' : '';
-          nameEl.textContent = player.name + aiLabel;
-        }
-        if (cardCountEl) cardCountEl.textContent = `${player.cards.length}张牌`;
-        if (roleEl) roleEl.textContent = player.isLandlord ? '地主' : '';
-      }
-    });
+    // HTML中有两个AI玩家显示区域：player-0 和 player-1
+    // 我们需要显示 gameData.players[1] 和 gameData.players[2]（两个AI玩家）
+    
+    const aiPlayers = gameData.players.filter((p: any) => p.type === PlayerType.AI);
+    
+    // 更新第一个AI玩家（显示在 player-0 区域）
+    const firstAiEl = document.getElementById('player-0');
+    if (firstAiEl && aiPlayers.length > 0) {
+      const firstAi = aiPlayers[0];
+      const nameEl = firstAiEl.querySelector('.player-name');
+      const cardCountEl = firstAiEl.querySelector('.card-count');
+      const roleEl = firstAiEl.querySelector('.player-role');
+      
+      if (nameEl) nameEl.textContent = `${firstAi.name} (AI)`;
+      if (cardCountEl) cardCountEl.textContent = `${firstAi.cards.length}张牌`;
+      if (roleEl) roleEl.textContent = firstAi.isLandlord ? '地主' : '';
+    }
+    
+    // 更新第二个AI玩家（显示在 player-1 区域）
+    const secondAiEl = document.getElementById('player-1');
+    if (secondAiEl && aiPlayers.length > 1) {
+      const secondAi = aiPlayers[1];
+      const nameEl = secondAiEl.querySelector('.player-name');
+      const cardCountEl = secondAiEl.querySelector('.card-count');
+      const roleEl = secondAiEl.querySelector('.player-role');
+      
+      if (nameEl) nameEl.textContent = `${secondAi.name} (AI)`;
+      if (cardCountEl) cardCountEl.textContent = `${secondAi.cards.length}张牌`;
+      if (roleEl) roleEl.textContent = secondAi.isLandlord ? '地主' : '';
+    }
 
     // 更新人类玩家信息（显示在底部）
     const currentPlayerInfo = document.getElementById('current-player-info');
