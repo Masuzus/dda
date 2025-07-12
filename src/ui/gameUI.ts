@@ -18,46 +18,73 @@ export class GameUI {
 
   // 设置UI事件监听器
   private setupEventListeners(): void {
+    console.log('设置UI事件监听器...');
+    
     // 开始游戏按钮
     const startBtn = document.getElementById('start-game-btn');
     if (startBtn) {
       startBtn.addEventListener('click', () => this.startNewGame());
+      console.log('开始游戏按钮事件已绑定');
     }
 
     // 叫地主按钮
     const callLandlordBtn = document.getElementById('call-landlord-btn');
     if (callLandlordBtn) {
-      callLandlordBtn.addEventListener('click', () => this.callLandlord());
+      callLandlordBtn.addEventListener('click', () => {
+        console.log('叫地主按钮被点击');
+        this.callLandlord();
+      });
+      console.log('叫地主按钮事件已绑定');
     }
 
     // 不叫地主按钮
     const passLandlordBtn = document.getElementById('pass-landlord-btn');
     if (passLandlordBtn) {
-      passLandlordBtn.addEventListener('click', () => this.passLandlord());
+      passLandlordBtn.addEventListener('click', () => {
+        console.log('不叫地主按钮被点击');
+        this.passLandlord();
+      });
+      console.log('不叫地主按钮事件已绑定');
     }
 
     // 出牌按钮
     const playCardsBtn = document.getElementById('play-cards-btn');
     if (playCardsBtn) {
-      playCardsBtn.addEventListener('click', () => this.playSelectedCards());
+      playCardsBtn.addEventListener('click', () => {
+        console.log('出牌按钮被点击');
+        this.playSelectedCards();
+      });
+      console.log('出牌按钮事件已绑定');
     }
 
     // 过牌按钮
     const passBtn = document.getElementById('pass-btn');
     if (passBtn) {
-      passBtn.addEventListener('click', () => this.pass());
+      passBtn.addEventListener('click', () => {
+        console.log('过牌按钮被点击');
+        this.pass();
+      });
+      console.log('过牌按钮事件已绑定');
     }
 
     // 重新开始按钮
     const resetBtn = document.getElementById('reset-game-btn');
     if (resetBtn) {
-      resetBtn.addEventListener('click', () => this.resetGame());
+      resetBtn.addEventListener('click', () => {
+        console.log('重新开始按钮被点击');
+        this.resetGame();
+      });
+      console.log('重新开始按钮事件已绑定');
     }
 
     // 再来一局按钮
     const newGameBtn = document.getElementById('new-game-btn');
     if (newGameBtn) {
-      newGameBtn.addEventListener('click', () => this.startNewGame());
+      newGameBtn.addEventListener('click', () => {
+        console.log('再来一局按钮被点击');
+        this.startNewGame();
+      });
+      console.log('再来一局按钮事件已绑定');
     }
   }
 
@@ -361,22 +388,44 @@ export class GameUI {
     const currentPlayer = gameData.players[gameData.currentPlayer];
     const isHumanTurn = currentPlayer && currentPlayer.type === PlayerType.HUMAN;
 
+    console.log('按钮状态更新:', {
+      gameState: gameData.state,
+      currentPlayerId: gameData.currentPlayer,
+      currentPlayerType: currentPlayer ? currentPlayer.type : 'none',
+      isHumanTurn: isHumanTurn
+    });
+
     // 只有轮到人类玩家时才显示操作按钮
     if (isHumanTurn) {
       if (gameData.state === GameState.BIDDING) {
         // 在叫地主阶段，显示叫地主按钮
-        if (callLandlordBtn) callLandlordBtn.classList.remove('hidden');
-        if (passLandlordBtn) passLandlordBtn.classList.remove('hidden');
+        if (callLandlordBtn) {
+          callLandlordBtn.classList.remove('hidden');
+          console.log('显示叫地主按钮');
+        }
+        if (passLandlordBtn) {
+          passLandlordBtn.classList.remove('hidden');
+          console.log('显示不叫地主按钮');
+        }
       } else if (gameData.state === GameState.PLAYING) {
         // 在游戏阶段，显示出牌按钮
-        if (playCardsBtn) playCardsBtn.classList.remove('hidden');
-        if (passBtn) passBtn.classList.remove('hidden');
+        if (playCardsBtn) {
+          playCardsBtn.classList.remove('hidden');
+          console.log('显示出牌按钮');
+        }
+        if (passBtn) {
+          passBtn.classList.remove('hidden');
+          console.log('显示过牌按钮');
+        }
       }
     }
 
     // 在游戏进行中或结束时显示重置按钮
     if (gameData.state === GameState.PLAYING || gameData.state === GameState.FINISHED) {
-      if (resetBtn) resetBtn.classList.remove('hidden');
+      if (resetBtn) {
+        resetBtn.classList.remove('hidden');
+        console.log('显示重置按钮');
+      }
     }
   }
 

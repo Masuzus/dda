@@ -63,62 +63,83 @@
 
         <!-- 游戏主界面 -->
         <div id="game-board" class="game-board hidden">
-            <!-- 其他玩家区域 -->
-            <div class="other-players">
-                <div class="player-info" id="player-0">
-                    <div class="player-name">玩家1</div>
-                    <div class="player-cards">
-                        <div class="card-count">17张牌</div>
-                        <div class="player-role"></div>
+            <div class="table-container">
+                <!-- 牌桌 -->
+                <div class="card-table">
+                    <!-- 左上角玩家 -->
+                    <div class="player-seat player-left" id="player-0">
+                        <div class="player-info">
+                            <div class="player-name">玩家1</div>
+                            <div class="player-role"></div>
+                            <div class="card-count">17张牌</div>
+                        </div>
+                        <div class="player-cards-area">
+                            <div class="card-back-stack">
+                                <div class="card-back"></div>
+                                <div class="card-back"></div>
+                                <div class="card-back"></div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="player-info" id="player-1">
-                    <div class="player-name">玩家2</div>
-                    <div class="player-cards">
-                        <div class="card-count">17张牌</div>
-                        <div class="player-role"></div>
+
+                    <!-- 右上角玩家 -->
+                    <div class="player-seat player-right" id="player-1">
+                        <div class="player-info">
+                            <div class="player-name">玩家2</div>
+                            <div class="player-role"></div>
+                            <div class="card-count">17张牌</div>
+                        </div>
+                        <div class="player-cards-area">
+                            <div class="card-back-stack">
+                                <div class="card-back"></div>
+                                <div class="card-back"></div>
+                                <div class="card-back"></div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- 游戏中央区域 -->
-            <div class="game-center">
-                <div class="last-played">
-                    <h3>上一手牌</h3>
-                    <div id="last-cards" class="card-display">
-                        <span class="no-cards">暂无</span>
+                    <!-- 桌面中央区域 -->
+                    <div class="table-center">
+                        <div class="table-surface">
+                            <!-- 上一手牌显示 -->
+                            <div class="last-played">
+                                <div class="last-played-label">上一手牌</div>
+                                <div id="last-cards" class="card-display">
+                                    <span class="no-cards">暂无</span>
+                                </div>
+                                <div id="last-player" class="last-player-info"></div>
+                            </div>
+
+                            <!-- 地主牌展示 -->
+                            <div id="landlord-cards" class="landlord-cards hidden">
+                                <div class="landlord-label">地主牌</div>
+                                <div id="landlord-card-display" class="card-display"></div>
+                            </div>
+
+                            <!-- 游戏操作按钮 -->
+                            <div class="game-actions">
+                                <button id="call-landlord-btn" class="btn btn-landlord hidden">叫地主</button>
+                                <button id="pass-landlord-btn" class="btn btn-pass hidden">不叫</button>
+                                <button id="play-cards-btn" class="btn btn-play hidden">出牌</button>
+                                <button id="pass-btn" class="btn btn-pass hidden">过牌</button>
+                                <button id="reset-game-btn" class="btn btn-secondary hidden">重新开始</button>
+                            </div>
+                        </div>
                     </div>
-                    <div id="last-player" class="last-player-info"></div>
-                </div>
 
-                <!-- 地主牌展示 -->
-                <div id="landlord-cards" class="landlord-cards hidden">
-                    <h3>地主牌</h3>
-                    <div id="landlord-card-display" class="card-display"></div>
-                </div>
-
-                <!-- 游戏操作按钮 -->
-                <div class="game-actions">
-                    <button id="call-landlord-btn" class="btn btn-landlord hidden">叫地主</button>
-                    <button id="pass-landlord-btn" class="btn btn-pass hidden">不叫</button>
-                    <button id="play-cards-btn" class="btn btn-play hidden">出牌</button>
-                    <button id="pass-btn" class="btn btn-pass hidden">过牌</button>
-                    <button id="reset-game-btn" class="btn btn-secondary hidden">重新开始</button>
-                </div>
-            </div>
-
-            <!-- 当前玩家区域 -->
-            <div class="current-player">
-                <div class="player-info" id="current-player-info">
-                    <div class="player-name">当前玩家</div>
-                    <div class="player-role"></div>
-                </div>
-                
-                <!-- 手牌显示 -->
-                <div class="hand-cards">
-                    <h3>我的手牌</h3>
-                    <div id="player-cards" class="card-hand"></div>
+                    <!-- 底部玩家（人类玩家） -->
+                    <div class="player-seat player-bottom" id="current-player-info">
+                        <div class="player-info">
+                            <div class="player-name">当前玩家</div>
+                            <div class="player-role"></div>
+                        </div>
+                        
+                        <!-- 手牌显示 -->
+                        <div class="hand-cards">
+                            <div class="hand-cards-label">我的手牌</div>
+                            <div id="player-cards" class="card-hand"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

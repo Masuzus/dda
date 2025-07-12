@@ -186,116 +186,262 @@ body {
 
 /* 游戏主界面 */
 .game-board {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    gap: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     min-height: 70vh;
+    padding: 20px;
 }
 
-.other-players {
+.table-container {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    height: 700px;
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 牌桌样式 */
+.card-table {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-areas: 
+        "left-player . right-player"
+        ". table-center ."
+        ". bottom-player .";
+    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-rows: 1fr 2fr 1fr;
     gap: 20px;
+}
+
+/* 桌面中央区域 */
+.table-center {
+    grid-area: table-center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.table-surface {
+    width: 400px;
+    height: 300px;
+    background: radial-gradient(ellipse at center, #2d5016 0%, #1a3009 100%);
+    border: 15px solid #8b4513;
+    border-radius: 50%;
+    box-shadow: 
+        0 0 20px rgba(0, 0, 0, 0.3),
+        inset 0 0 30px rgba(0, 0, 0, 0.2),
+        0 8px 25px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
+
+.table-surface::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+/* 玩家座位 */
+.player-seat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.player-left {
+    grid-area: left-player;
+    align-self: start;
+}
+
+.player-right {
+    grid-area: right-player;
+    align-self: start;
+}
+
+.player-bottom {
+    grid-area: bottom-player;
+    align-self: end;
 }
 
 .player-info {
-    background: rgba(255, 255, 255, 0.9);
-    padding: 20px;
-    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 20px;
+    border-radius: 20px;
     text-align: center;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    flex: 1;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 3px solid #8b4513;
+    min-width: 150px;
 }
 
 .player-name {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: bold;
     color: #2c3e50;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .player-role {
     font-size: 0.9em;
     color: #e74c3c;
     font-weight: bold;
-}
-
-.card-count {
-    font-size: 1.1em;
-    color: #7f8c8d;
     margin-bottom: 5px;
 }
 
-/* 游戏中央区域 */
-.game-center {
-    background: rgba(255, 255, 255, 0.9);
-    padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+.card-count {
+    font-size: 0.9em;
+    color: #7f8c8d;
 }
 
+/* AI玩家的卡牌背面堆叠效果 */
+.player-cards-area {
+    position: relative;
+    width: 80px;
+    height: 20px;
+}
+
+.card-back-stack {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.card-back {
+    position: absolute;
+    width: 35px;
+    height: 50px;
+    background: linear-gradient(45deg, #1e3c72, #2a5298);
+    border: 1px solid #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.card-back::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    background: repeating-linear-gradient(
+        45deg,
+        #fff,
+        #fff 2px,
+        #2a5298 2px,
+        #2a5298 4px
+    );
+    border-radius: 3px;
+    opacity: 0.3;
+}
+
+.card-back:nth-child(1) {
+    left: 0;
+    transform: rotate(-5deg);
+}
+
+.card-back:nth-child(2) {
+    left: 15px;
+    transform: rotate(0deg);
+    z-index: 1;
+}
+
+.card-back:nth-child(3) {
+    left: 30px;
+    transform: rotate(5deg);
+}
+
+/* 桌面中央内容 */
 .last-played {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
-.last-played h3 {
-    color: #2c3e50;
-    margin-bottom: 15px;
-    font-size: 1.3em;
+.last-played-label {
+    color: #fff;
+    font-size: 0.9em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.landlord-label {
+    color: #ffeb3b;
+    font-size: 0.9em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .card-display {
     display: flex;
     justify-content: center;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 5px;
+    margin-bottom: 8px;
     flex-wrap: wrap;
 }
 
 .no-cards {
-    color: #95a5a6;
+    color: rgba(255, 255, 255, 0.7);
     font-style: italic;
+    font-size: 0.9em;
 }
 
 .last-player-info {
-    font-size: 0.9em;
-    color: #7f8c8d;
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .landlord-cards {
-    margin-bottom: 25px;
-}
-
-.landlord-cards h3 {
-    color: #e74c3c;
     margin-bottom: 15px;
-    font-size: 1.3em;
 }
 
 .game-actions {
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 10px;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 10;
 }
 
-/* 当前玩家区域 */
-.current-player {
-    background: rgba(255, 255, 255, 0.9);
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+.game-actions .btn {
+    padding: 8px 16px;
+    font-size: 0.9em;
+    position: relative;
+    z-index: 11;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+/* 底部玩家（人类玩家）样式 */
+.player-bottom .player-info {
+    margin-bottom: 20px;
 }
 
 .hand-cards {
     text-align: center;
 }
 
-.hand-cards h3 {
+.hand-cards-label {
     color: #2c3e50;
+    font-size: 1.1em;
+    font-weight: bold;
     margin-bottom: 15px;
-    font-size: 1.3em;
 }
 
 .card-hand {
@@ -437,27 +583,129 @@ body {
         gap: 10px;
     }
     
-    .other-players {
-        flex-direction: column;
-        gap: 10px;
+    .table-container {
+        height: 600px;
+        max-width: 100%;
+    }
+    
+    .table-surface {
+        width: 300px;
+        height: 200px;
+        padding: 15px;
+    }
+    
+    .player-info {
+        padding: 10px 15px;
+        min-width: 120px;
+    }
+    
+    .player-name {
+        font-size: 1em;
+    }
+    
+    .card-count {
+        font-size: 0.8em;
+    }
+    
+    .card-back {
+        width: 30px;
+        height: 40px;
+    }
+    
+    .card-back:nth-child(2) {
+        left: 12px;
+    }
+    
+    .card-back:nth-child(3) {
+        left: 24px;
+    }
+    
+    .last-played-label,
+    .landlord-label {
+        font-size: 0.8em;
     }
     
     .game-actions {
         flex-direction: column;
         align-items: center;
+        gap: 8px;
     }
     
-    .card {
-        width: 50px;
-        height: 75px;
+    .game-actions .btn {
+        padding: 6px 12px;
         font-size: 0.8em;
     }
     
+    .card {
+        width: 45px;
+        height: 68px;
+        font-size: 0.7em;
+    }
+    
     .card-hand {
-        gap: 5px;
+        gap: 4px;
+    }
+    
+    .hand-cards-label {
+        font-size: 1em;
     }
     
     .result-content {
         padding: 30px 20px;
+    }
+}
+
+/* 超小屏幕适配 */
+@media (max-width: 480px) {
+    .table-container {
+        height: 500px;
+    }
+    
+    .table-surface {
+        width: 250px;
+        height: 160px;
+        padding: 10px;
+    }
+    
+    .card-table {
+        grid-template-columns: 1fr 1.5fr 1fr;
+        grid-template-rows: 1fr 1.5fr 1fr;
+        gap: 10px;
+    }
+    
+    .player-info {
+        padding: 8px 12px;
+        min-width: 100px;
+    }
+    
+    .player-name {
+        font-size: 0.9em;
+    }
+    
+    .card-count {
+        font-size: 0.7em;
+    }
+    
+    .card-back {
+        width: 25px;
+        height: 35px;
+    }
+    
+    .card-back:nth-child(2) {
+        left: 10px;
+    }
+    
+    .card-back:nth-child(3) {
+        left: 20px;
+    }
+    
+    .card {
+        width: 35px;
+        height: 50px;
+        font-size: 0.6em;
+    }
+    
+    .card-hand {
+        gap: 3px;
     }
 } 
