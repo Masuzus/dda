@@ -5,3 +5,4 @@ export * from './logic/cardPattern';
 export * from './engine/gameEngine';
 export * from './ui/gameUI';
 export * from './utils/cardUtils';
+export * from './ai/aiPlayer';

@@ -1,12 +1,15 @@
 import { Card } from '../types/card';
 import { Player } from '../types/player';
 import { GameData } from '../logic/gameLogic';
+import { AIDifficulty } from '../ai/aiPlayer';
 export declare class GameEngine {
     private game;
     private gameId;
     private eventListeners;
+    private aiPlayers;
+    private aiActionTimeout;
     constructor();
-    createNewGame(gameId: string, playerNames: string[]): GameData;
+    createNewGame(gameId: string, playerNames: string[], aiDifficulty?: AIDifficulty): GameData;
     startGame(): void;
     callLandlord(playerId: string): boolean;
     passLandlord(playerId: string): boolean;
@@ -23,5 +26,8 @@ export declare class GameEngine {
     private emit;
     validateGameState(): boolean;
     getPlayableCards(playerId: string): Card[][];
+    private scheduleAIAction;
+    private executeAIAction;
+    private checkAndScheduleNextAI;
     destroy(): void;
 }

@@ -1,11 +1,12 @@
 export declare class GameUI {
     private engine;
-    private currentPlayerId;
+    private humanPlayerId;
     private selectedCards;
     constructor();
     private setupEventListeners;
     private setupGameEngineListeners;
     private startNewGame;
+    private getDifficultyText;
     private callLandlord;
     private passLandlord;
     private playSelectedCards;

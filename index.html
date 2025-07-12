@@ -38,14 +38,25 @@
         <div id="setup-panel" class="setup-panel">
             <h2>游戏设置</h2>
             <div class="player-setup">
-                <label for="player1">玩家1名称:</label>
-                <input type="text" id="player1" value="玩家1" maxlength="10">
+                <label for="player1">您的名称:</label>
+                <input type="text" id="player1" value="我" maxlength="10">
                 
-                <label for="player2">玩家2名称:</label>
-                <input type="text" id="player2" value="玩家2" maxlength="10">
+                <label for="player2">AI玩家1:</label>
+                <input type="text" id="player2" value="电脑1" maxlength="10">
                 
-                <label for="player3">玩家3名称:</label>
-                <input type="text" id="player3" value="玩家3" maxlength="10">
+                <label for="player3">AI玩家2:</label>
+                <input type="text" id="player3" value="电脑2" maxlength="10">
+                
+                <label for="ai-difficulty">AI难度:</label>
+                <select id="ai-difficulty">
+                    <option value="easy">简单</option>
+                    <option value="medium" selected>中等</option>
+                    <option value="hard">困难</option>
+                </select>
+            </div>
+            <div class="game-mode-info">
+                <p>🤖 单人游戏模式：您将与两个AI玩家对战</p>
+                <p>🎯 AI会自动进行叫地主和出牌操作</p>
             </div>
             <button id="start-game-btn" class="btn btn-primary">开始游戏</button>
         </div>

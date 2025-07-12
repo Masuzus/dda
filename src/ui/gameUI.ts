@@ -1,11 +1,13 @@
 import { GameEngine } from '../engine/gameEngine';
 import { Card, Suit, Rank } from '../types/card';
 import { GameState } from '../logic/gameLogic';
+import { PlayerType } from '../types/player';
+import { AIDifficulty } from '../ai/aiPlayer';
 import { cardsToString } from '../utils/cardUtils';
 
 export class GameUI {
   private engine: GameEngine;
-  private currentPlayerId: string = 'player_0'; // 当前操作的玩家ID，将动态更新
+  private humanPlayerId: string = 'player_0'; // 人类玩家ID（固定为player_0）
   private selectedCards: Card[] = [];
 
   constructor() {
@@ -83,24 +85,42 @@ export class GameUI {
   // 开始新游戏
   private startNewGame(): void {
     try {
-      const player1Name = (document.getElementById('player1') as HTMLInputElement).value || '玩家1';
-      const player2Name = (document.getElementById('player2') as HTMLInputElement).value || '玩家2';
-      const player3Name = (document.getElementById('player3') as HTMLInputElement).value || '玩家3';
+      const player1Name = (document.getElementById('player1') as HTMLInputElement).value || '我';
+      const player2Name = (document.getElementById('player2') as HTMLInputElement).value || '电脑1';
+      const player3Name = (document.getElementById('player3') as HTMLInputElement).value || '电脑2';
+      
+      // 获取AI难度设置
+      const difficultySelect = document.getElementById('ai-difficulty') as HTMLSelectElement;
+      const difficulty = (difficultySelect?.value || 'medium') as AIDifficulty;
 
-      const gameData = this.engine.createNewGame('game_1', [player1Name, player2Name, player3Name]);
+      const gameData = this.engine.createNewGame('game_1', [player1Name, player2Name, player3Name], difficulty);
       this.engine.startGame();
       
       this.hideResultPanel();
-      this.showMessage('游戏开始！', 'success');
+      this.showMessage(`游戏开始！AI难度: ${this.getDifficultyText(difficulty)}`, 'success');
     } catch (error: any) {
       this.showMessage(error.message, 'error');
+    }
+  }
+
+  // 获取难度显示文本
+  private getDifficultyText(difficulty: AIDifficulty): string {
+    switch (difficulty) {
+      case AIDifficulty.EASY:
+        return '简单';
+      case AIDifficulty.MEDIUM:
+        return '中等';
+      case AIDifficulty.HARD:
+        return '困难';
+      default:
+        return '中等';
     }
   }
 
   // 叫地主
   private callLandlord(): void {
     try {
-      this.engine.callLandlord(this.currentPlayerId);
+      this.engine.callLandlord(this.humanPlayerId);
     } catch (error: any) {
       this.showMessage(error.message, 'error');
     }
@@ -109,7 +129,7 @@ export class GameUI {
   // 不叫地主
   private passLandlord(): void {
     try {
-      this.engine.passLandlord(this.currentPlayerId);
+      this.engine.passLandlord(this.humanPlayerId);
     } catch (error: any) {
       this.showMessage(error.message, 'error');
     }
@@ -123,7 +143,7 @@ export class GameUI {
     }
 
     try {
-      this.engine.playCards(this.currentPlayerId, this.selectedCards);
+      this.engine.playCards(this.humanPlayerId, this.selectedCards);
       this.selectedCards = [];
     } catch (error: any) {
       this.showMessage(error.message, 'error');
@@ -133,7 +153,7 @@ export class GameUI {
   // 过牌
   private pass(): void {
     try {
-      this.engine.pass(this.currentPlayerId);
+      this.engine.pass(this.humanPlayerId);
     } catch (error: any) {
       this.showMessage(error.message, 'error');
     }
@@ -194,26 +214,29 @@ export class GameUI {
   private updatePlayerInfo(gameData: any): void {
     gameData.players.forEach((player: any, index: number) => {
       const playerEl = document.getElementById(`player-${index}`);
-      if (playerEl && index !== 2) { // 不显示当前玩家（假设当前玩家是第三个）
+      if (playerEl && index !== 0) { // 不显示人类玩家（player_0），显示AI玩家
         const nameEl = playerEl.querySelector('.player-name');
         const cardCountEl = playerEl.querySelector('.card-count');
         const roleEl = playerEl.querySelector('.player-role');
         
-        if (nameEl) nameEl.textContent = player.name;
+        if (nameEl) {
+          const aiLabel = player.type === PlayerType.AI ? ' (AI)' : '';
+          nameEl.textContent = player.name + aiLabel;
+        }
         if (cardCountEl) cardCountEl.textContent = `${player.cards.length}张牌`;
         if (roleEl) roleEl.textContent = player.isLandlord ? '地主' : '';
       }
     });
 
-    // 更新当前玩家信息
+    // 更新人类玩家信息（显示在底部）
     const currentPlayerInfo = document.getElementById('current-player-info');
     if (currentPlayerInfo) {
-      const currentPlayer = gameData.players[gameData.currentPlayer];
+      const humanPlayer = gameData.players.find((p: any) => p.id === this.humanPlayerId);
       const nameEl = currentPlayerInfo.querySelector('.player-name');
       const roleEl = currentPlayerInfo.querySelector('.player-role');
       
-      if (nameEl) nameEl.textContent = currentPlayer ? currentPlayer.name : '当前玩家';
-      if (roleEl) roleEl.textContent = currentPlayer && currentPlayer.isLandlord ? '地主' : '';
+      if (nameEl) nameEl.textContent = humanPlayer ? humanPlayer.name : '玩家';
+      if (roleEl) roleEl.textContent = humanPlayer && humanPlayer.isLandlord ? '地主' : '';
     }
   }
 
@@ -222,15 +245,25 @@ export class GameUI {
     const playerCardsEl = document.getElementById('player-cards');
     if (!playerCardsEl) return;
 
-    // 显示当前活跃玩家的手牌
-    const currentPlayer = gameData.players[gameData.currentPlayer];
-    if (!currentPlayer) return;
+    // 显示人类玩家（player_0）的手牌
+    const humanPlayer = gameData.players.find((p: any) => p.id === this.humanPlayerId);
+    if (!humanPlayer) return;
 
     playerCardsEl.innerHTML = '';
     
-    currentPlayer.cards.forEach((card: Card) => {
+    humanPlayer.cards.forEach((card: Card) => {
       const cardEl = this.createCardElement(card);
-      cardEl.addEventListener('click', () => this.toggleCardSelection(card, cardEl));
+      // 只有轮到人类玩家时才允许选择牌
+      const currentPlayer = gameData.players[gameData.currentPlayer];
+      const isHumanTurn = currentPlayer && currentPlayer.type === PlayerType.HUMAN;
+      
+      if (isHumanTurn) {
+        cardEl.addEventListener('click', () => this.toggleCardSelection(card, cardEl));
+      } else {
+        cardEl.style.opacity = '0.7'; // AI回合时手牌变灰
+        cardEl.style.cursor = 'not-allowed';
+      }
+      
       playerCardsEl.appendChild(cardEl);
     });
   }
@@ -309,20 +342,21 @@ export class GameUI {
       if (btn) btn.classList.add('hidden');
     });
 
-    // 更新当前操作的玩家ID
+    // 检查当前玩家是否是人类玩家
     const currentPlayer = gameData.players[gameData.currentPlayer];
-    if (currentPlayer) {
-      this.currentPlayerId = currentPlayer.id;
-    }
+    const isHumanTurn = currentPlayer && currentPlayer.type === PlayerType.HUMAN;
 
-    // 在叫地主阶段，显示叫地主按钮
-    if (gameData.state === GameState.BIDDING) {
-      if (callLandlordBtn) callLandlordBtn.classList.remove('hidden');
-      if (passLandlordBtn) passLandlordBtn.classList.remove('hidden');
-    } else if (gameData.state === GameState.PLAYING) {
-      // 在游戏阶段，显示出牌按钮
-      if (playCardsBtn) playCardsBtn.classList.remove('hidden');
-      if (passBtn) passBtn.classList.remove('hidden');
+    // 只有轮到人类玩家时才显示操作按钮
+    if (isHumanTurn) {
+      if (gameData.state === GameState.BIDDING) {
+        // 在叫地主阶段，显示叫地主按钮
+        if (callLandlordBtn) callLandlordBtn.classList.remove('hidden');
+        if (passLandlordBtn) passLandlordBtn.classList.remove('hidden');
+      } else if (gameData.state === GameState.PLAYING) {
+        // 在游戏阶段，显示出牌按钮
+        if (playCardsBtn) playCardsBtn.classList.remove('hidden');
+        if (passBtn) passBtn.classList.remove('hidden');
+      }
     }
 
     // 在游戏进行中或结束时显示重置按钮

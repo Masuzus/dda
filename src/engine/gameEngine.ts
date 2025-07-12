@@ -14,12 +14,15 @@ import {
   getCurrentPlayer,
   resetGame
 } from '../logic/gameLogic';
+import { AIPlayer, AIDifficulty } from '../ai/aiPlayer';
 
 // 游戏引擎类
 export class GameEngine {
   private game: GameData | null = null;
   private gameId: string = '';
   private eventListeners: Map<string, Function[]> = new Map();
+  private aiPlayers: Map<string, AIPlayer> = new Map();
+  private aiActionTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
     // 初始化事件监听器
@@ -31,15 +34,27 @@ export class GameEngine {
   }
 
   // 创建新游戏
-  public createNewGame(gameId: string, playerNames: string[]): GameData {
+  public createNewGame(gameId: string, playerNames: string[], aiDifficulty: AIDifficulty = AIDifficulty.MEDIUM): GameData {
     if (playerNames.length !== 3) {
       throw new Error('需要3个玩家');
     }
 
-    // 创建玩家
-    const players: Player[] = playerNames.map((name, index) => 
-      createPlayer(`player_${index}`, name, PlayerType.HUMAN, index)
-    );
+    // 清除之前的AI玩家
+    this.aiPlayers.clear();
+    if (this.aiActionTimeout) {
+      clearTimeout(this.aiActionTimeout);
+      this.aiActionTimeout = null;
+    }
+
+    // 创建玩家：第一个是人类玩家，后两个是AI
+    const players: Player[] = playerNames.map((name, index) => {
+      const playerType = index === 0 ? PlayerType.HUMAN : PlayerType.AI;
+      return createPlayer(`player_${index}`, name, playerType, index);
+    });
+
+    // 创建AI玩家实例
+    this.aiPlayers.set('player_1', new AIPlayer('player_1', aiDifficulty));
+    this.aiPlayers.set('player_2', new AIPlayer('player_2', aiDifficulty));
 
     // 创建游戏
     this.game = createGame(gameId, players);
@@ -62,6 +77,9 @@ export class GameEngine {
     // 发牌
     dealCards(this.game);
     this.emit('stateChange', this.game);
+    
+    // 检查是否需要AI操作
+    this.scheduleAIAction();
   }
 
   // 叫地主
@@ -74,6 +92,10 @@ export class GameEngine {
       const result = callLandlord(this.game, playerId);
       this.emit('playerMove', { playerId, action: 'call_landlord' });
       this.emit('stateChange', this.game);
+      
+      // 调度下一个AI操作
+      this.checkAndScheduleNextAI();
+      
       return result;
     } catch (error) {
       this.emit('error', error);
@@ -91,6 +113,10 @@ export class GameEngine {
       const result = passLandlord(this.game, playerId);
       this.emit('playerMove', { playerId, action: 'pass_landlord' });
       this.emit('stateChange', this.game);
+      
+      // 调度下一个AI操作
+      this.checkAndScheduleNextAI();
+      
       return result;
     } catch (error) {
       this.emit('error', error);
@@ -113,6 +139,9 @@ export class GameEngine {
       if (isGameOver(this.game)) {
         const gameResult = getGameResult(this.game);
         this.emit('gameEnd', gameResult);
+      } else {
+        // 如果游戏未结束，调度下一个AI操作
+        this.checkAndScheduleNextAI();
       }
 
       return result;
@@ -132,6 +161,10 @@ export class GameEngine {
       const result = pass(this.game, playerId);
       this.emit('playerMove', { playerId, action: 'pass' });
       this.emit('stateChange', this.game);
+      
+      // 调度下一个AI操作
+      this.checkAndScheduleNextAI();
+      
       return result;
     } catch (error) {
       this.emit('error', error);
@@ -170,6 +203,12 @@ export class GameEngine {
   public resetGame(): void {
     if (!this.game) {
       throw new Error('游戏尚未创建');
+    }
+
+    // 清除AI定时器
+    if (this.aiActionTimeout) {
+      clearTimeout(this.aiActionTimeout);
+      this.aiActionTimeout = null;
     }
 
     resetGame(this.game);
@@ -264,10 +303,85 @@ export class GameEngine {
     return player.cards.map(card => [card]);
   }
 
+  // 调度AI操作
+  private scheduleAIAction(): void {
+    if (!this.game) return;
+    
+    const currentPlayer = getCurrentPlayer(this.game);
+    if (!currentPlayer || currentPlayer.type !== PlayerType.AI) return;
+    
+    const aiPlayer = this.aiPlayers.get(currentPlayer.id);
+    if (!aiPlayer) return;
+    
+    // 清除之前的定时器
+    if (this.aiActionTimeout) {
+      clearTimeout(this.aiActionTimeout);
+    }
+    
+    // 设置AI思考延迟
+    const delay = aiPlayer.getThinkingDelay();
+    this.aiActionTimeout = setTimeout(() => {
+      this.executeAIAction(currentPlayer.id);
+    }, delay);
+  }
+
+  // 执行AI操作
+  private executeAIAction(playerId: string): void {
+    if (!this.game) return;
+    
+    const aiPlayer = this.aiPlayers.get(playerId);
+    if (!aiPlayer) return;
+    
+    try {
+      if (this.game.state === GameState.BIDDING) {
+        // AI叫地主阶段
+        const decision = aiPlayer.decideLandlord(this.game);
+        
+        if (decision.action === 'call_landlord') {
+          this.callLandlord(playerId);
+        } else {
+          this.passLandlord(playerId);
+        }
+      } else if (this.game.state === GameState.PLAYING) {
+        // AI出牌阶段
+        const decision = aiPlayer.decidePlayCards(this.game);
+        
+        if (decision.action === 'play_cards' && decision.cards) {
+          this.playCards(playerId, decision.cards);
+        } else {
+          this.pass(playerId);
+        }
+      }
+    } catch (error) {
+      console.error('AI操作错误:', error);
+      // AI操作失败时，默认选择保守策略
+      if (this.game.state === GameState.BIDDING) {
+        this.passLandlord(playerId);
+      } else if (this.game.state === GameState.PLAYING) {
+        this.pass(playerId);
+      }
+    }
+  }
+
+  // 检查并调度下一个AI操作
+  private checkAndScheduleNextAI(): void {
+    // 稍微延迟一下，让UI有时间更新
+    setTimeout(() => {
+      this.scheduleAIAction();
+    }, 100);
+  }
+
   // 销毁游戏引擎
   public destroy(): void {
+    // 清除AI定时器
+    if (this.aiActionTimeout) {
+      clearTimeout(this.aiActionTimeout);
+      this.aiActionTimeout = null;
+    }
+    
     this.game = null;
     this.gameId = '';
+    this.aiPlayers.clear();
     this.eventListeners.clear();
   }
 } 
